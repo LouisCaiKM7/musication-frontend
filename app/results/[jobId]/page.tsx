@@ -21,6 +21,7 @@ export default function ResultsPage() {
     if (jobId) {
       pollForResults()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [jobId])
 
   const pollForResults = async () => {
@@ -63,9 +64,12 @@ export default function ResultsPage() {
       }
 
       poll()
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Results error:', err)
-      setError(err.response?.data?.message || 'Failed to load results.')
+      const errorMessage = err instanceof Error && 'response' in err 
+        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message 
+        : 'Failed to load results.'
+      setError(errorMessage || 'Failed to load results.')
       setLoading(false)
     }
   }
@@ -118,7 +122,7 @@ export default function ResultsPage() {
             <Music2 className="w-16 h-16 text-gray-400 mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-gray-800 mb-4">No Matches Found</h2>
             <p className="text-gray-600 mb-8">
-              Your audio file doesn't have significant similarity with any tracks in our library.
+              Your audio file doesn&apos;t have significant similarity with any tracks in our library.
             </p>
             <button
               onClick={() => router.push('/')}

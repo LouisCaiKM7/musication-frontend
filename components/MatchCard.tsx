@@ -4,7 +4,6 @@ import { useState } from 'react'
 import { Music, ChevronDown, ChevronUp, Clock } from 'lucide-react'
 import { SimilarityResult, getVisualizationUrl } from '@/lib/api'
 import { getSimilarityColor, getSimilarityEmoji, getSimilarityLabel, formatDuration } from '@/lib/utils'
-import Image from 'next/image'
 
 interface MatchCardProps {
   match: SimilarityResult
@@ -13,7 +12,7 @@ interface MatchCardProps {
 export default function MatchCard({ match }: MatchCardProps) {
   const [expanded, setExpanded] = useState(false)
 
-  const formatSegments = (segments: any[]) => {
+  const formatSegments = (segments: Array<{ start1: number; end1: number; start2: number; end2: number }>) => {
     if (segments.length === 0) return 'No specific segments'
     const first = segments[0]
     return `${formatDuration(first.start1)}-${formatDuration(first.end1)} ↔ ${formatDuration(first.start2)}-${formatDuration(first.end2)}`
@@ -78,6 +77,7 @@ export default function MatchCard({ match }: MatchCardProps) {
                 📊 Fingerprint Analysis
               </h4>
               <div className="bg-white rounded-lg p-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={getVisualizationUrl(match.visualizationPaths.fingerprint)}
                   alt="Fingerprint visualization"
@@ -91,6 +91,7 @@ export default function MatchCard({ match }: MatchCardProps) {
                 🎼 Melody Similarity Heatmap
               </h4>
               <div className="bg-white rounded-lg p-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={getVisualizationUrl(match.visualizationPaths.chromaHeatmap)}
                   alt="Chroma heatmap"
@@ -104,6 +105,7 @@ export default function MatchCard({ match }: MatchCardProps) {
                 🎵 DTW Alignment Path
               </h4>
               <div className="bg-white rounded-lg p-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={getVisualizationUrl(match.visualizationPaths.dtwPath)}
                   alt="DTW path"

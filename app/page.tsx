@@ -42,9 +42,12 @@ export default function Home() {
       
       // Navigate to results page
       router.push(`/results/${jobId}`)
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Analysis error:', err)
-      setError(err.response?.data?.message || 'Failed to analyze audio file. Please try again.')
+      const errorMessage = err instanceof Error && 'response' in err 
+        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message 
+        : 'Failed to analyze audio file. Please try again.'
+      setError(errorMessage || 'Failed to analyze audio file. Please try again.')
       setIsAnalyzing(false)
     }
   }
