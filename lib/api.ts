@@ -125,3 +125,8 @@ export async function deleteTrack(trackId: string) {
   const res = await api.delete(`/tracks/${trackId}`)
   return res.data
 }
+
+export async function analyzeTrack(trackId: string) {
+  const res = await api.post(`/tracks/${trackId}/analyze`)
+  return res.data
+}

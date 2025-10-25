@@ -1,13 +1,14 @@
 "use client";
 import { useEffect, useState } from "react";
-import { listTracks, deleteTrack, type Track } from "@/lib/api";
-import { Trash2 } from "lucide-react";
+import { listTracks, deleteTrack, analyzeTrack, type Track } from "@/lib/api";
+import { Trash2, Sparkles } from "lucide-react";
 
 export default function TrackList({ refreshToken }: { refreshToken: number }) {
   const [tracks, setTracks] = useState<Track[]>([]);
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [analyzing, setAnalyzing] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -42,6 +43,20 @@ export default function TrackList({ refreshToken }: { refreshToken: number }) {
     }
   };
 
+  const handleAnalyze = async (trackId: string) => {
+    setAnalyzing(trackId);
+    try {
+      const result = await analyzeTrack(trackId);
+      alert(`Analysis started! Analysis ID: ${result.analysis?.id || 'N/A'}`);
+      // TODO: Navigate to analysis results page when implemented
+    } catch (e) {
+      const error = e as Error;
+      alert(error?.message || "Failed to start analysis");
+    } finally {
+      setAnalyzing(null);
+    }
+  };
+
   if (loading) return <div>Loading tracks...</div>;
   if (err) return <div style={{ color: "red" }}>{err}</div>;
   if (!tracks.length) return <div>No tracks yet.</div>;
@@ -52,14 +67,24 @@ export default function TrackList({ refreshToken }: { refreshToken: number }) {
         <div key={t.id} className="border rounded-xl p-4 relative">
           <div className="flex items-start justify-between gap-2 mb-2">
             <div className="font-semibold flex-1">{t.title}</div>
-            <button
-              onClick={() => handleDelete(t.id)}
-              disabled={deleting === t.id}
-              className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-              title="Delete track"
-            >
-              <Trash2 className="w-4 h-4" />
-            </button>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleAnalyze(t.id)}
+                disabled={analyzing === t.id}
+                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                title="Analyze track"
+              >
+                <Sparkles className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleDelete(t.id)}
+                disabled={deleting === t.id}
+                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                title="Delete track"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           <audio controls src={t.audio_url} className="w-full mb-2" />
           <div className="text-xs text-gray-500">
