@@ -1,6 +1,6 @@
 # 🎵 Musication Frontend
 
-Advanced Music Similarity Analysis & Plagiarism Detection System
+Advanced Music Similarity Analysis & Plagiarism Detection System for all
 
 This is a [Next.js](https://nextjs.org) frontend application for the Musication music similarity analyzer.
 
