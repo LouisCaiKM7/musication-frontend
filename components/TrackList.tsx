@@ -14,12 +14,12 @@ export default function TrackList({ refreshToken }: { refreshToken: number }) {
     setLoading(true);
     setErr(null);
     listTracks()
-      .then((data: any) => {
+      .then((data: { tracks: Track[] } | Track[]) => {
         if (!mounted) return;
         const arr = Array.isArray(data) ? data : data.tracks;
         setTracks(arr || []);
       })
-      .catch((e: any) => setErr(e?.message || "Failed to load tracks"))
+      .catch((e: Error) => setErr(e?.message || "Failed to load tracks"))
       .finally(() => setLoading(false));
     return () => {
       mounted = false;
@@ -34,8 +34,9 @@ export default function TrackList({ refreshToken }: { refreshToken: number }) {
       await deleteTrack(trackId);
       // Remove from local state
       setTracks((prev) => prev.filter((t) => t.id !== trackId));
-    } catch (e: any) {
-      alert(e?.message || "Failed to delete track");
+    } catch (e) {
+      const error = e as Error;
+      alert(error?.message || "Failed to delete track");
     } finally {
       setDeleting(null);
     }

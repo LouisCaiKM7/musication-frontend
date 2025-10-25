@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { Music2, Search, AlertCircle } from 'lucide-react'
 import FileUploader from '@/components/FileUploader'
 import LibraryStatsComponent from '@/components/LibraryStats'
@@ -10,7 +9,6 @@ import { uploadTrack } from '@/lib/api'
 import TrackList from '@/components/TrackList'
 
 export default function Home() {
-  const router = useRouter()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -103,7 +101,7 @@ export default function Home() {
                 Upload to Library
               </button>
               <p className="mt-4 text-sm text-gray-500">
-                We'll add analysis later. For now, upload and play below.
+                We&apos;ll add analysis later. For now, upload and play below.
               </p>
             </div>
           )}

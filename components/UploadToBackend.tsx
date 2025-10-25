@@ -18,8 +18,9 @@ export default function UploadToBackend({ onUploaded }: { onUploaded: () => void
       setFile(null)
       setTitle('')
       onUploaded()
-    } catch (e: any) {
-      setErr(e.message || 'Upload failed')
+    } catch (e) {
+      const error = e as Error;
+      setErr(error.message || 'Upload failed')
     } finally {
       setLoading(false)
     }
