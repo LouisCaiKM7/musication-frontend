@@ -1,12 +1,9 @@
 import axios from 'axios'
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+const API_URL = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000'
 
 const api = axios.create({
   baseURL: API_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 })
 
 export interface LibraryStats {
@@ -62,9 +59,7 @@ export async function uploadAudioFile(file: File): Promise<{ jobId: string }> {
   formData.append('audio', file)
 
   const response = await api.post('/api/upload', formData, {
-    headers: {
-      'Content-Type': 'multipart/form-data',
-    },
+    headers: { 'Content-Type': 'multipart/form-data' },
   })
 
   return response.data
@@ -100,3 +95,33 @@ export function getVisualizationUrl(path: string): string {
 }
 
 export default api
+
+// ===== Flask backend integration (tracks) =====
+export type Track = {
+  id: string
+  title: string
+  audio_url: string
+  uploaded_at: string | null
+  duration_seconds: number | null
+  sample_rate: number | null
+}
+
+export async function listTracks(): Promise<{ tracks: Track[] } | Track[]> {
+  const res = await api.get('/tracks', { headers: { Accept: 'application/json' } })
+  return res.data
+}
+
+export async function uploadTrack(file: File, title: string) {
+  const form = new FormData()
+  form.append('file', file)
+  form.append('title', title)
+  const res = await api.post('/tracks', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  })
+  return res.data
+}
+
+export async function deleteTrack(trackId: string) {
+  const res = await api.delete(`/tracks/${trackId}`)
+  return res.data
+}

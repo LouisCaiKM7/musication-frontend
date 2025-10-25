@@ -6,13 +6,15 @@ import { Music2, Search, AlertCircle } from 'lucide-react'
 import FileUploader from '@/components/FileUploader'
 import LibraryStatsComponent from '@/components/LibraryStats'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import { uploadAudioFile, startAnalysis } from '@/lib/api'
+import { uploadTrack } from '@/lib/api'
+import TrackList from '@/components/TrackList'
 
 export default function Home() {
   const router = useRouter()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [refreshCounter, setRefreshCounter] = useState(0)
 
   const handleFileSelect = (file: File) => {
     setSelectedFile(file)
@@ -34,14 +36,10 @@ export default function Home() {
     setError(null)
 
     try {
-      // Upload file
-      const { jobId } = await uploadAudioFile(selectedFile)
-      
-      // Start analysis
-      await startAnalysis(jobId)
-      
-      // Navigate to results page
-      router.push(`/results/${jobId}`)
+      await uploadTrack(selectedFile, selectedFile.name)
+      // For now, we won't navigate to results; just reset selection and show list below
+      setSelectedFile(null)
+      setRefreshCounter(prev => prev + 1) // Trigger TrackList refresh
     } catch (err: unknown) {
       console.error('Analysis error:', err)
       const errorMessage = err instanceof Error && 'response' in err 
@@ -49,7 +47,9 @@ export default function Home() {
         : 'Failed to analyze audio file. Please try again.'
       setError(errorMessage || 'Failed to analyze audio file. Please try again.')
       setIsAnalyzing(false)
+      return
     }
+    setIsAnalyzing(false)
   }
 
   return (
@@ -91,7 +91,7 @@ export default function Home() {
           )}
 
           {isAnalyzing ? (
-            <LoadingSpinner message="Analyzing audio and comparing with library..." />
+            <LoadingSpinner message="Uploading..." />
           ) : (
             <div className="mt-8 text-center">
               <button
@@ -100,13 +100,19 @@ export default function Home() {
                 className="px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center gap-3 mx-auto hover:scale-105"
               >
                 <Search className="w-6 h-6" />
-                Find Similar Tracks
+                Upload to Library
               </button>
               <p className="mt-4 text-sm text-gray-500">
-                Analysis typically takes 30-60 seconds
+                We'll add analysis later. For now, upload and play below.
               </p>
             </div>
           )}
+        </div>
+
+        {/* Track list */}
+        <div className="bg-white rounded-2xl shadow-xl p-8 mb-8">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Your Tracks</h2>
+          <TrackList refreshToken={refreshCounter} />
         </div>
 
         {/* Disclaimer */}
