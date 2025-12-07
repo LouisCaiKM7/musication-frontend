@@ -97,6 +97,30 @@ export function getVisualizationUrl(path: string): string {
 export default api
 
 // ===== Flask backend integration (tracks) =====
+export type MusicMatch = {
+  score: number
+  title: string
+  artist: string
+  recording_id: string
+  musicbrainz_url: string
+}
+
+export type Analysis = {
+  id: string
+  method: string
+  status: 'pending' | 'processing' | 'completed' | 'failed'
+  created_at: string | null
+  completed_at: string | null
+  summary: string | null
+  artifacts?: {
+    id: string
+    artifact_type: string
+    content_type: string
+    data_json: MusicMatch[] | null
+    data_url: string | null
+  }[]
+}
+
 export type Track = {
   id: string
   title: string
@@ -104,6 +128,7 @@ export type Track = {
   uploaded_at: string | null
   duration_seconds: number | null
   sample_rate: number | null
+  analyses?: Analysis[]
 }
 
 export async function listTracks(): Promise<{ tracks: Track[] } | Track[]> {
@@ -128,5 +153,10 @@ export async function deleteTrack(trackId: string) {
 
 export async function analyzeTrack(trackId: string) {
   const res = await api.post(`/tracks/${trackId}/analyze`)
+  return res.data
+}
+
+export async function getTrack(trackId: string): Promise<{ track: Track }> {
+  const res = await api.get(`/tracks/${trackId}`)
   return res.data
 }
