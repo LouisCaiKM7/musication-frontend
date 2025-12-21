@@ -15,7 +15,6 @@ export default function ComparePage() {
   const [comparisonResult, setComparisonResult] = useState<ComparisonResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [progress, setProgress] = useState<AnalysisProgress | null>(null)
-  const [analysisId, setAnalysisId] = useState<string | null>(null)
 
   useEffect(() => {
     loadTracks()
@@ -55,7 +54,6 @@ export default function ComparePage() {
       // Start comparison (returns immediately with analysis_id)
       const response = await compareTracks(selectedTrack1.id, selectedTrack2.id)
       const currentAnalysisId = response.analysis_id
-      setAnalysisId(currentAnalysisId)
       
       // Poll for progress
       const pollInterval = setInterval(async () => {
@@ -70,7 +68,13 @@ export default function ComparePage() {
             if (completeResult.ok) {
               const data = await completeResult.json()
               // Reconstruct the comparison result from artifacts
-              const similarityReport = data.analysis?.artifacts?.find((a: any) => a.artifact_type === 'similarity_report')
+              interface Artifact {
+                artifact_type: string
+                content_type?: string
+                data_json?: Record<string, unknown>
+                base64?: string
+              }
+              const similarityReport = data.analysis?.artifacts?.find((a: Artifact) => a.artifact_type === 'similarity_report')
               if (similarityReport) {
                 setComparisonResult({
                   analysis_id: currentAnalysisId,
@@ -94,8 +98,8 @@ export default function ComparePage() {
                     summary: similarityReport.data_json.summary_text
                   },
                   visualizations: data.analysis?.artifacts
-                    ?.filter((a: any) => a.content_type === 'image/png' && a.base64)
-                    ?.map((a: any) => ({
+                    ?.filter((a: Artifact) => a.content_type === 'image/png' && a.base64)
+                    ?.map((a: Artifact) => ({
                       type: a.artifact_type,
                       filename: `${a.artifact_type}.png`,
                       base64: a.base64
@@ -129,7 +133,6 @@ export default function ComparePage() {
     setComparisonResult(null)
     setError(null)
     setProgress(null)
-    setAnalysisId(null)
   }
 
   if (loading) {

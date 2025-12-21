@@ -1,16 +1,15 @@
 'use client'
 
-import { ComparisonResult, getVisualizationImageUrl } from '@/lib/api'
+import { ComparisonResult } from '@/lib/api'
 import { TrendingUp, Music, Clock, Key } from 'lucide-react'
-import Image from 'next/image'
 
 interface SimilarityReportProps {
   result: ComparisonResult
 }
 
 export default function SimilarityReport({ result }: SimilarityReportProps) {
-  const { results, visualizations, analysis_id } = result
-  const { overall_similarity, chroma_analysis, melody_analysis, tempo_analysis, similar_segments, summary } = results
+  const { results, visualizations } = result
+  const { overall_similarity, chroma_analysis, similar_segments, summary } = results
 
   const getSimilarityColor = (percentage: number) => {
     if (percentage >= 80) return 'text-red-600 bg-red-50 border-red-200'
@@ -194,6 +193,7 @@ export default function SimilarityReport({ result }: SimilarityReportProps) {
                 </h4>
               </div>
               <div className="p-4 bg-white">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={`data:image/png;base64,${viz.base64}`}
                   alt={viz.filename}
