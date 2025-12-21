@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Music2, Search, AlertCircle } from 'lucide-react'
+import { Music2, Search, AlertCircle, GitCompare } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import FileUploader from '@/components/FileUploader'
 import LibraryStatsComponent from '@/components/LibraryStats'
 import LoadingSpinner from '@/components/LoadingSpinner'
@@ -9,6 +10,7 @@ import { uploadTrack } from '@/lib/api'
 import TrackList from '@/components/TrackList'
 
 export default function Home() {
+  const router = useRouter()
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -61,9 +63,16 @@ export default function Home() {
               Musication
             </h1>
           </div>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
             Advanced Music Similarity Analysis & Plagiarism Detection
           </p>
+          <button
+            onClick={() => router.push('/compare')}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+          >
+            <GitCompare className="w-5 h-5" />
+            Compare Tracks
+          </button>
         </header>
 
         {/* Library Stats */}

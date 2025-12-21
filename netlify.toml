@@ -1,10 +1,10 @@
 [build]
   command = "npm run build"
   publish = ".next"
-  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "22"
+  NEXT_PUBLIC_API_URL = "https://your-backend-url.onrender.com"
 
 [[redirects]]
   from = "/*"

@@ -160,3 +160,92 @@ export async function getTrack(trackId: string): Promise<{ track: Track }> {
   const res = await api.get(`/tracks/${trackId}`)
   return res.data
 }
+
+export type SimilarSegment = {
+  track1_start_frame: number
+  track1_end_frame: number
+  track2_start_frame: number
+  track2_end_frame: number
+  track1_start_time: number
+  track1_end_time: number
+  track2_start_time: number
+  track2_end_time: number
+  similarity_score: number
+  max_similarity: number
+}
+
+export type ComparisonResult = {
+  analysis_id: string
+  results: {
+    track1: {
+      title: string
+      duration: number
+      tempo: number
+    }
+    track2: {
+      title: string
+      duration: number
+      tempo: number
+    }
+    overall_similarity: {
+      overall_similarity_score: number
+      similarity_percentage: number
+      similarity_level: string
+      verdict: string
+      component_scores: {
+        chroma_harmony: number
+        melody_contour: number
+        tempo: number
+      }
+      weights: {
+        chroma_harmony: number
+        melody_contour: number
+        tempo: number
+      }
+    }
+    chroma_analysis: {
+      transposition_semitones: number
+      similarity_score: number
+      dtw_distance: number
+    }
+    melody_analysis: {
+      similarity_score: number
+      dtw_distance: number
+    }
+    tempo_analysis: {
+      track1_tempo: number
+      track2_tempo: number
+      tempo_ratio: number
+    }
+    similar_segments: SimilarSegment[]
+    summary: string
+  }
+  visualizations: {
+    type: string
+    filename: string
+    base64: string
+  }[]
+}
+
+export async function compareTracks(
+  trackId1: string,
+  trackId2: string
+): Promise<ComparisonResult> {
+  const res = await api.post(`/tracks/${trackId1}/compare/${trackId2}`)
+  return res.data
+}
+
+export function getVisualizationImageUrl(analysisId: string, artifactType: string): string {
+  return `${API_URL}/analyses/${analysisId}/visualizations/${artifactType}`
+}
+
+export type AnalysisProgress = {
+  status: 'processing' | 'completed' | 'failed'
+  progress: number
+  message: string
+}
+
+export async function getAnalysisProgress(analysisId: string): Promise<AnalysisProgress> {
+  const res = await api.get(`/analyses/${analysisId}/progress`)
+  return res.data
+}
