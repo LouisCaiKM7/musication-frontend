@@ -193,12 +193,25 @@ export default function SimilarityReport({ result }: SimilarityReportProps) {
                 </h4>
               </div>
               <div className="p-4 bg-white">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`data:image/png;base64,${viz.base64}`}
-                  alt={viz.filename}
-                  className="w-full h-auto"
-                />
+                {viz.base64 ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={`data:image/png;base64,${viz.base64}`}
+                    alt={viz.filename}
+                    className="w-full h-auto"
+                  />
+                ) : viz.image_url ? (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}${viz.image_url}`}
+                    alt={viz.filename}
+                    className="w-full h-auto"
+                  />
+                ) : (
+                  <div className="text-gray-500 text-center py-8">
+                    Visualization not available
+                  </div>
+                )}
               </div>
             </div>
           ))}

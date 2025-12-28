@@ -223,7 +223,9 @@ export type ComparisonResult = {
   visualizations: {
     type: string
     filename: string
-    base64: string
+    image_url?: string
+    base64?: string
+    has_image?: boolean
   }[]
 }
 

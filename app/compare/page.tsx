@@ -73,6 +73,8 @@ export default function ComparePage() {
                 content_type?: string
                 data_json?: Record<string, unknown>
                 base64?: string
+                image_url?: string
+                has_image?: boolean
               }
               const similarityReport = data.analysis?.artifacts?.find((a: Artifact) => a.artifact_type === 'similarity_report')
               if (similarityReport) {
@@ -98,11 +100,12 @@ export default function ComparePage() {
                     summary: similarityReport.data_json.summary_text
                   },
                   visualizations: data.analysis?.artifacts
-                    ?.filter((a: Artifact) => a.content_type === 'image/png' && a.base64)
+                    ?.filter((a: Artifact) => a.content_type === 'image/png')
                     ?.map((a: Artifact) => ({
                       type: a.artifact_type,
                       filename: `${a.artifact_type}.png`,
-                      base64: a.base64
+                      image_url: a.image_url || '',
+                      has_image: a.has_image || false
                     })) || []
                 })
               }
