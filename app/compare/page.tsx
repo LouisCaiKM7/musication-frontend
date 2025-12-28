@@ -56,70 +56,92 @@ export default function ComparePage() {
       const currentAnalysisId = response.analysis_id
       
       // Poll for progress
+      let isProcessing = true
       const pollInterval = setInterval(async () => {
+        if (!isProcessing) {
+          clearInterval(pollInterval)
+          return
+        }
+        
         try {
           const progressData = await getAnalysisProgress(currentAnalysisId)
           setProgress(progressData)
           
           if (progressData.status === 'completed') {
+            isProcessing = false
             clearInterval(pollInterval)
             // Fetch complete results
-            const completeResult = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/analyses/${currentAnalysisId}`)
-            if (completeResult.ok) {
-              const data = await completeResult.json()
-              // Reconstruct the comparison result from artifacts
-              interface Artifact {
-                artifact_type: string
-                content_type?: string
-                data_json?: Record<string, unknown>
-                base64?: string
-                image_url?: string
-                has_image?: boolean
-              }
-              const similarityReport = data.analysis?.artifacts?.find((a: Artifact) => a.artifact_type === 'similarity_report')
-              if (similarityReport) {
-                setComparisonResult({
-                  analysis_id: currentAnalysisId,
-                  results: {
-                    ...similarityReport.data_json,
-                    track1: {
-                      title: selectedTrack1.title || 'Track 1',
-                      duration: selectedTrack1.duration_seconds || 0,
-                      tempo: 120
+            try {
+              const completeResult = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/analyses/${currentAnalysisId}`)
+              if (completeResult.ok) {
+                const data = await completeResult.json()
+                console.log('Analysis data:', data)
+                // Reconstruct the comparison result from artifacts
+                interface Artifact {
+                  artifact_type: string
+                  content_type?: string
+                  data_json?: Record<string, unknown>
+                  base64?: string
+                  image_url?: string
+                  has_image?: boolean
+                }
+                const similarityReport = data.analysis?.artifacts?.find((a: Artifact) => a.artifact_type === 'similarity_report')
+                if (similarityReport && similarityReport.data_json) {
+                  const result = {
+                    analysis_id: currentAnalysisId,
+                    results: {
+                      track1: {
+                        title: selectedTrack1.title || 'Track 1',
+                        duration: selectedTrack1.duration_seconds || 0,
+                        tempo: (similarityReport.data_json.tempo_analysis as any)?.track1_tempo || 120
+                      },
+                      track2: {
+                        title: selectedTrack2.title || 'Track 2',
+                        duration: selectedTrack2.duration_seconds || 0,
+                        tempo: (similarityReport.data_json.tempo_analysis as any)?.track2_tempo || 120
+                      },
+                      overall_similarity: similarityReport.data_json.overall_similarity as any,
+                      chroma_analysis: similarityReport.data_json.chroma_analysis as any,
+                      melody_analysis: similarityReport.data_json.melody_analysis as any,
+                      tempo_analysis: similarityReport.data_json.tempo_analysis as any,
+                      similar_segments: similarityReport.data_json.similar_segments as any,
+                      summary: (similarityReport.data_json.summary_text as string) || 'No summary available'
                     },
-                    track2: {
-                      title: selectedTrack2.title || 'Track 2',
-                      duration: selectedTrack2.duration_seconds || 0,
-                      tempo: 120
-                    },
-                    overall_similarity: similarityReport.data_json.overall_similarity,
-                    chroma_analysis: similarityReport.data_json.chroma_analysis,
-                    melody_analysis: similarityReport.data_json.melody_analysis,
-                    tempo_analysis: similarityReport.data_json.tempo_analysis,
-                    similar_segments: similarityReport.data_json.similar_segments,
-                    summary: similarityReport.data_json.summary_text
-                  },
-                  visualizations: data.analysis?.artifacts
-                    ?.filter((a: Artifact) => a.content_type === 'image/png')
-                    ?.map((a: Artifact) => ({
-                      type: a.artifact_type,
-                      filename: `${a.artifact_type}.png`,
-                      image_url: a.image_url || '',
-                      has_image: a.has_image || false
-                    })) || []
-                })
+                    visualizations: data.analysis?.artifacts
+                      ?.filter((a: Artifact) => a.content_type === 'image/png')
+                      ?.map((a: Artifact) => ({
+                        type: a.artifact_type,
+                        filename: `${a.artifact_type}.png`,
+                        image_url: a.image_url || '',
+                        has_image: a.has_image || false
+                      })) || []
+                  }
+                  console.log('Setting comparison result:', result)
+                  setComparisonResult(result)
+                } else {
+                  console.error('No similarity report found in artifacts')
+                  setError('Failed to load comparison results')
+                }
+              } else {
+                console.error('Failed to fetch analysis:', completeResult.status)
+                setError('Failed to load comparison results')
               }
+            } catch (fetchError) {
+              console.error('Error fetching complete results:', fetchError)
+              setError('Failed to load comparison results')
             }
             setComparing(false)
           } else if (progressData.status === 'failed') {
+            isProcessing = false
             clearInterval(pollInterval)
             setError(progressData.message)
             setComparing(false)
           }
         } catch (err) {
           console.error('Failed to fetch progress:', err)
+          // Don't stop polling on error, but log it
         }
-      }, 1000)
+      }, 2000) // Increased to 2 seconds to reduce load
       
     } catch (err: unknown) {
       console.error('Comparison failed:', err)
