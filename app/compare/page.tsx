@@ -87,25 +87,28 @@ export default function ComparePage() {
                 }
                 const similarityReport = data.analysis?.artifacts?.find((a: Artifact) => a.artifact_type === 'similarity_report')
                 if (similarityReport && similarityReport.data_json) {
+                  const reportData = similarityReport.data_json
+                  const tempoAnalysis = reportData.tempo_analysis as { track1_tempo?: number; track2_tempo?: number } | undefined
+                  
                   const result = {
                     analysis_id: currentAnalysisId,
                     results: {
                       track1: {
                         title: selectedTrack1.title || 'Track 1',
                         duration: selectedTrack1.duration_seconds || 0,
-                        tempo: (similarityReport.data_json.tempo_analysis as any)?.track1_tempo || 120
+                        tempo: tempoAnalysis?.track1_tempo || 120
                       },
                       track2: {
                         title: selectedTrack2.title || 'Track 2',
                         duration: selectedTrack2.duration_seconds || 0,
-                        tempo: (similarityReport.data_json.tempo_analysis as any)?.track2_tempo || 120
+                        tempo: tempoAnalysis?.track2_tempo || 120
                       },
-                      overall_similarity: similarityReport.data_json.overall_similarity as any,
-                      chroma_analysis: similarityReport.data_json.chroma_analysis as any,
-                      melody_analysis: similarityReport.data_json.melody_analysis as any,
-                      tempo_analysis: similarityReport.data_json.tempo_analysis as any,
-                      similar_segments: similarityReport.data_json.similar_segments as any,
-                      summary: (similarityReport.data_json.summary_text as string) || 'No summary available'
+                      overall_similarity: reportData.overall_similarity,
+                      chroma_analysis: reportData.chroma_analysis,
+                      melody_analysis: reportData.melody_analysis,
+                      tempo_analysis: reportData.tempo_analysis,
+                      similar_segments: reportData.similar_segments,
+                      summary: (reportData.summary_text as string) || 'No summary available'
                     },
                     visualizations: data.analysis?.artifacts
                       ?.filter((a: Artifact) => a.content_type === 'image/png')
